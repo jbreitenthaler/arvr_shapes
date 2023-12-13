@@ -14,7 +14,6 @@ const char *password = "123456789";
 // Set web server port number to 80
 WiFiServer server(80);
 
-
 // Create a instance of class LSM6DS3
 LSM6DS3 myIMU(I2C_MODE, 0x6A); // I2C device address 0x6A
                                //  put your setup code here, to run once:
@@ -29,8 +28,9 @@ int c = 0;
 void setup()
 {
     Serial.begin(115200);
-
-    while (!Serial);
+    Serial.println("IT WORKS");
+    while (!Serial)
+        ;
     // Call .begin() to configure the IMUs
     if (myIMU.begin() != 0)
     {
@@ -56,19 +56,27 @@ void setup()
 
 void loop()
 {
+    calcRollPitchYaw();
     WiFiClient client = server.available(); // Listen for incoming clients
 
     if (client)
     {                                  // If a new client connects,
         Serial.println("New Client."); // print a message out in the serial port
         while (client.connected())
-        { 
+        {
             calcRollPitchYaw();
-            client.write(roll);
+            char buf[11];
+            memset(buf, 0, sizeof(buf));
+            dtostrf(roll, 6, 3, buf);
+            client.write((const uint8_t *)&buf, sizeof(buf));
             client.write("/");
-            client.write(pitch);
+            memset(buf, 0, sizeof(buf));
+            dtostrf(pitch, 6, 3, buf);
+            client.write((const uint8_t *)&buf, sizeof(buf));
             client.write("/");
-            client.write(yaw);
+            memset(buf, 0, sizeof(buf));
+            dtostrf(yaw, 6, 3, buf);
+            client.write((const uint8_t *)&buf, sizeof(buf));
             client.write("\n");
 
             Serial.print(roll);
@@ -76,6 +84,7 @@ void loop()
             Serial.print(pitch);
             Serial.print("/");
             Serial.println(yaw);
+            delay(16);
         }
     }
 }
@@ -129,30 +138,30 @@ void calculate_IMU_error()
     Serial.println(GyroErrorZ);
 }
 
-void calcRollPitchYaw() {
+void calcRollPitchYaw()
+{
     AccX = myIMU.readFloatAccelX();
-            AccY = myIMU.readFloatAccelY();
-            AccZ = myIMU.readFloatAccelZ();
-            // Calculating Roll and Pitch from the accelerometer data
-            accAngleX = (atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180 / PI) - 0.58;      // AccErrorX ~(0.58) See the calculate_IMU_error()custom function for more details
-            accAngleY = (atan(-1 * AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180 / PI) + 1.58; // AccErrorY ~(-1.58)
-            // === Read gyroscope data === //
-            previousTime = currentTime;                        // Previous time is stored before the actual time read
-            currentTime = millis();                            // Current time actual time read
-            elapsedTime = (currentTime - previousTime) / 1000; // Divide by 1000 to get seconds
-            GyroX = myIMU.readFloatGyroX();
-            GyroY = myIMU.readFloatGyroY();
-            GyroZ = myIMU.readFloatGyroZ();
-            // Correct the outputs with the calculated error values
-            GyroX = GyroX + 0.56; // GyroErrorX ~(-0.56)
-            GyroY = GyroY - 2;    // GyroErrorY ~(2)
-            GyroZ = GyroZ + 0.79; // GyroErrorZ ~ (-0.8)
-            // Currently the raw values are in degrees per seconds, deg/s, so we need to multiply by sendonds (s) to get the angle in degrees
-            gyroAngleX = gyroAngleX + GyroX * elapsedTime; // deg/s * s = deg
-            gyroAngleY = gyroAngleY + GyroY * elapsedTime;
-            yaw = yaw + GyroZ * elapsedTime;
-            // Complementary filter - combine acceleromter and gyro angle values
-            roll = 0.96 * gyroAngleX + 0.04 * accAngleX;
-            pitch = 0.96 * gyroAngleY + 0.04 * accAngleY;
-
+    AccY = myIMU.readFloatAccelY();
+    AccZ = myIMU.readFloatAccelZ();
+    // Calculating Roll and Pitch from the accelerometer data
+    accAngleX = (atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180 / PI) - 0.58;      // AccErrorX ~(0.58) See the calculate_IMU_error()custom function for more details
+    accAngleY = (atan(-1 * AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180 / PI) + 1.58; // AccErrorY ~(-1.58)
+    // === Read gyroscope data === //
+    previousTime = currentTime;                        // Previous time is stored before the actual time read
+    currentTime = millis();                            // Current time actual time read
+    elapsedTime = (currentTime - previousTime) / 1000; // Divide by 1000 to get seconds
+    GyroX = myIMU.readFloatGyroX();
+    GyroY = myIMU.readFloatGyroY();
+    GyroZ = myIMU.readFloatGyroZ();
+    // Correct the outputs with the calculated error values
+    GyroX = GyroX + 0.56; // GyroErrorX ~(-0.56)
+    GyroY = GyroY - 2;    // GyroErrorY ~(2)
+    GyroZ = GyroZ + 0.79; // GyroErrorZ ~ (-0.8)
+    // Currently the raw values are in degrees per seconds, deg/s, so we need to multiply by sendonds (s) to get the angle in degrees
+    gyroAngleX = gyroAngleX + GyroX * elapsedTime; // deg/s * s = deg
+    gyroAngleY = gyroAngleY + GyroY * elapsedTime;
+    yaw = yaw + GyroZ * elapsedTime;
+    // Complementary filter - combine acceleromter and gyro angle values
+    roll = 0.96 * gyroAngleX + 0.04 * accAngleX;
+    pitch = 0.96 * gyroAngleY + 0.04 * accAngleY;
 }
