@@ -25,7 +25,7 @@ void draw() {
   textSize(22);
   text("Roll: " + int(roll) + "     Pitch: " + int(pitch), -100, 265);
   // Rotate the object
-  rotateX(radians(-pitch));
+  rotateX(radians(pitch));
   rotateZ(radians(roll));
   rotateY(radians(yaw));
   
@@ -37,7 +37,7 @@ void draw() {
   fill(255, 255, 255);
   text("Rotate that shit", -183, 10, 101);
   //delay(10);
-  //println("ypr:\t" + roll + "\t" + yaw); // Print the values to check whether we are getting proper values
+  println("ypr:\t" + roll + "\t" + yaw); // Print the values to check whether we are getting proper values
 }
 // Read data from the Serial Port
 void serialEvent () { 

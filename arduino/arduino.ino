@@ -6,20 +6,27 @@
 #include "Wire.h"
 // Load Wi-Fi library
 #include <WiFi.h>
-
-// Replace with your network credentials
+//#include <MadgwickAHRS.h>
+#include "Adafruit_AHRS_Mahony.h"
 const char *ssid = "ESP32-Access-Point";
 const char *password = "123456789";
 
 // Set web server port number to 80
 WiFiServer server(80);
+WiFiClient client;
 
 // Create a instance of class LSM6DS3
 LSM6DS3 myIMU(I2C_MODE, 0x6A); // I2C device address 0x6A
                                //  put your setup code here, to run once:
+Adafruit_Mahony filter;
+unsigned long microsPerReading, microsPrevious;
+float accelScale, gyroScale;
+
 float AccX, AccY, AccZ;
 float GyroX, GyroY, GyroZ;
 float accAngleX, accAngleY, gyroAngleX, gyroAngleY, gyroAngleZ;
+int aix, aiy, aiz;
+int gix, giy, giz;
 float roll, pitch, yaw;
 float AccErrorX, AccErrorY, GyroErrorX, GyroErrorY, GyroErrorZ;
 float elapsedTime, currentTime, previousTime;
@@ -40,8 +47,14 @@ void setup()
     {
         Serial.println("Device OK!");
     }
-    calculate_IMU_error();
-
+    myIMU.settings.gyroRange = 245;
+    myIMU.settings.gyroSampleRate = 833;
+    myIMU.settings.accelRange = 2;
+    myIMU.settings.accelSampleRate = 833;
+    filter.begin(5);
+    //    calculate_IMU_error();
+    microsPerReading = 16000;
+    microsPrevious = micros();
     // Connect to Wi-Fi network with SSID and password
     Serial.print("Setting AP (Access Point)…");
     // Remove the password parameter, if you want the AP (Access Point) to be open
@@ -56,112 +69,100 @@ void setup()
 
 void loop()
 {
-    calcRollPitchYaw();
-    WiFiClient client = server.available(); // Listen for incoming clients
+    //    calcRollPitchYaw();
+    aix = myIMU.readRawAccelX();
+                aiy = myIMU.readRawAccelY();
+                aiz = myIMU.readRawAccelZ();
+                gix = myIMU.readRawGyroX();
+                giy = myIMU.readRawGyroY();
+                giz = myIMU.readRawGyroZ();
+
+                calcRollPitchYawMadgwick(aix, aiy, aiz, gix, giy, giz);
+
+                roll = filter.getRoll();
+                pitch = filter.getPitch();
+                yaw = filter.getYaw();
+
+                //sendData();
+                Serial.print(roll);
+                Serial.print("/");
+                Serial.print(pitch);
+                Serial.print("/");
+                Serial.println(yaw);
+                delay(16);
+    client = server.available(); // Listen for incoming clients
 
     if (client)
     {                                  // If a new client connects,
         Serial.println("New Client."); // print a message out in the serial port
         while (client.connected())
         {
-            calcRollPitchYaw();
-            char buf[11];
-            memset(buf, 0, sizeof(buf));
-            dtostrf(roll, 6, 3, buf);
-            client.write((const uint8_t *)&buf, sizeof(buf));
-            client.write("/");
-            memset(buf, 0, sizeof(buf));
-            dtostrf(pitch, 6, 3, buf);
-            client.write((const uint8_t *)&buf, sizeof(buf));
-            client.write("/");
-            memset(buf, 0, sizeof(buf));
-            dtostrf(yaw, 6, 3, buf);
-            client.write((const uint8_t *)&buf, sizeof(buf));
-            client.write("\n");
+            unsigned long microsNow;
+            microsNow = micros();
+            if (microsNow - microsPrevious >= microsPerReading)
+            {
+                
+                microsPrevious = microsPrevious + microsPerReading;
+            }
 
-            Serial.print(roll);
-            Serial.print("/");
-            Serial.print(pitch);
-            Serial.print("/");
-            Serial.println(yaw);
-            delay(16);
+            //delay(16);
         }
     }
 }
 
-void calculate_IMU_error()
+void calcRollPitchYawMadgwick(int &aix, int &aiy, int &aiz, int &gix, int &giy, int &giz)
 {
-    // We can call this funtion in the setup section to calculate the accelerometer and gyro data error. From here we will get the error values used in the above equations printed on the Serial Monitor.
-    // Note that we should place the IMU flat in order to get the proper values, so that we then can the correct values
-    // Read accelerometer values 200 times
-    while (c < 200)
-    {
-        AccX = myIMU.readFloatAccelX();
-        AccY = myIMU.readFloatAccelY();
-        AccZ = myIMU.readFloatAccelZ();
-        // Sum all readings
-        AccErrorX = AccErrorX + ((atan((AccY) / sqrt(pow((AccX), 2) + pow((AccZ), 2))) * 180 / PI));
-        AccErrorY = AccErrorY + ((atan(-1 * (AccX) / sqrt(pow((AccY), 2) + pow((AccZ), 2))) * 180 / PI));
-        c++;
-    }
-    // Divide the sum by 200 to get the error value
-    AccErrorX = AccErrorX / 200;
-    AccErrorY = AccErrorY / 200;
-    c = 0;
-    // Read gyro values 200 times
-    while (c < 200)
-    {
-        // Sum all readings
-        GyroX = myIMU.readFloatGyroX();
-        GyroY = myIMU.readFloatGyroY();
-        GyroZ = myIMU.readFloatGyroZ();
+    float ax, ay, az;
+    float gx, gy, gz;
+    ax = convertRawAcceleration(aix);
+    ay = convertRawAcceleration(aiy);
+    az = convertRawAcceleration(aiz);
+    gx = convertRawGyro(gix);
+    gy = convertRawGyro(giy);
+    gz = convertRawGyro(giz);
+    gyroScale = 1;
+    // update the filter, which computes orientation
+    filter.updateIMU(gx*gyroScale, gy*gyroScale, gz*gyroScale, ax, ay, az);
+}
+float convertRawAcceleration(int aRaw)
+{
+    // since we are using 2 g range
+    // -2 g maps to a raw value of -32768
+    // +2 g maps to a raw value of 32767
 
-        GyroErrorX = GyroErrorX + (GyroX / 131.0);
-        GyroErrorY = GyroErrorY + (GyroY / 131.0);
-        GyroErrorZ = GyroErrorZ + (GyroZ / 131.0);
-        c++;
-    }
-    // Divide the sum by 200 to get the error value
-    GyroErrorX = GyroErrorX / 200;
-    GyroErrorY = GyroErrorY / 200;
-    GyroErrorZ = GyroErrorZ / 200;
-    // Print the error values on the Serial Monitor
-    Serial.print("AccErrorX: ");
-    Serial.println(AccErrorX);
-    Serial.print("AccErrorY: ");
-    Serial.println(AccErrorY);
-    Serial.print("GyroErrorX: ");
-    Serial.println(GyroErrorX);
-    Serial.print("GyroErrorY: ");
-    Serial.println(GyroErrorY);
-    Serial.print("GyroErrorZ: ");
-    Serial.println(GyroErrorZ);
+    float a = (aRaw * 2.0) / 32768.0;
+    return a;
 }
 
-void calcRollPitchYaw()
+float convertRawGyro(int gRaw)
 {
-    AccX = myIMU.readFloatAccelX();
-    AccY = myIMU.readFloatAccelY();
-    AccZ = myIMU.readFloatAccelZ();
-    // Calculating Roll and Pitch from the accelerometer data
-    accAngleX = (atan(AccY / sqrt(pow(AccX, 2) + pow(AccZ, 2))) * 180 / PI) - 0.58;      // AccErrorX ~(0.58) See the calculate_IMU_error()custom function for more details
-    accAngleY = (atan(-1 * AccX / sqrt(pow(AccY, 2) + pow(AccZ, 2))) * 180 / PI) + 1.58; // AccErrorY ~(-1.58)
-    // === Read gyroscope data === //
-    previousTime = currentTime;                        // Previous time is stored before the actual time read
-    currentTime = millis();                            // Current time actual time read
-    elapsedTime = (currentTime - previousTime) / 1000; // Divide by 1000 to get seconds
-    GyroX = myIMU.readFloatGyroX();
-    GyroY = myIMU.readFloatGyroY();
-    GyroZ = myIMU.readFloatGyroZ();
-    // Correct the outputs with the calculated error values
-    GyroX = GyroX + 0.56; // GyroErrorX ~(-0.56)
-    GyroY = GyroY - 2;    // GyroErrorY ~(2)
-    GyroZ = GyroZ + 0.79; // GyroErrorZ ~ (-0.8)
-    // Currently the raw values are in degrees per seconds, deg/s, so we need to multiply by sendonds (s) to get the angle in degrees
-    gyroAngleX = gyroAngleX + GyroX * elapsedTime; // deg/s * s = deg
-    gyroAngleY = gyroAngleY + GyroY * elapsedTime;
-    yaw = yaw + GyroZ * elapsedTime;
-    // Complementary filter - combine acceleromter and gyro angle values
-    roll = 0.96 * gyroAngleX + 0.04 * accAngleX;
-    pitch = 0.96 * gyroAngleY + 0.04 * accAngleY;
+    // since we are using 250 degrees/seconds range
+    // -250 maps to a raw value of -32768
+    // +250 maps to a raw value of 32767
+
+    float g = (gRaw * 245.0) / 32768.0;
+    return g;
+}
+
+void sendData()
+{
+    char buf[11];
+    memset(buf, 0, sizeof(buf));
+    dtostrf(roll, 6, 3, buf);
+    client.write((const uint8_t *)&buf, sizeof(buf));
+    client.write("/");
+    memset(buf, 0, sizeof(buf));
+    dtostrf(pitch, 6, 3, buf);
+    client.write((const uint8_t *)&buf, sizeof(buf));
+    client.write("/");
+    memset(buf, 0, sizeof(buf));
+    dtostrf(yaw, 6, 3, buf);
+    client.write((const uint8_t *)&buf, sizeof(buf));
+    client.write("\n");
+
+    Serial.print(roll);
+    Serial.print("/");
+    Serial.print(pitch);
+    Serial.print("/");
+    Serial.println(yaw);
 }
