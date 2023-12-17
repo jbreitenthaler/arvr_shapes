@@ -6,8 +6,11 @@
 #include "Wire.h"
 // Load Wi-Fi library
 #include <WiFi.h>
-//#include <MadgwickAHRS.h>
-#include "Adafruit_AHRS_Mahony.h"
+
+// #include <MadgwickAHRS.h>
+// #include "Adafruit_AHRS_Mahony.h"
+#include "Fusion.h"
+
 const char *ssid = "ESP32-Access-Point";
 const char *password = "123456789";
 
@@ -18,7 +21,11 @@ WiFiClient client;
 // Create a instance of class LSM6DS3
 LSM6DS3 myIMU(I2C_MODE, 0x6A); // I2C device address 0x6A
                                //  put your setup code here, to run once:
-Adafruit_Mahony filter;
+FusionAhrs ahrs;
+    
+
+#define SAMPLE_PERIOD (0.1f) // replace this with actual sample period
+
 unsigned long microsPerReading, microsPrevious;
 float accelScale, gyroScale;
 
@@ -51,7 +58,9 @@ void setup()
     myIMU.settings.gyroSampleRate = 833;
     myIMU.settings.accelRange = 2;
     myIMU.settings.accelSampleRate = 833;
-    filter.begin(5);
+
+    FusionAhrsInitialise(&ahrs);
+    
     //    calculate_IMU_error();
     microsPerReading = 16000;
     microsPrevious = micros();
@@ -71,25 +80,29 @@ void loop()
 {
     //    calcRollPitchYaw();
     aix = myIMU.readRawAccelX();
-                aiy = myIMU.readRawAccelY();
-                aiz = myIMU.readRawAccelZ();
-                gix = myIMU.readRawGyroX();
-                giy = myIMU.readRawGyroY();
-                giz = myIMU.readRawGyroZ();
+    aiy = myIMU.readRawAccelY();
+    aiz = myIMU.readRawAccelZ();
+    gix = myIMU.readRawGyroX();
+    giy = myIMU.readRawGyroY();
+    giz = myIMU.readRawGyroZ();
 
-                calcRollPitchYawMadgwick(aix, aiy, aiz, gix, giy, giz);
+    calcRollPitchYawMadgwick(aix, aiy, aiz, gix, giy, giz);
+    
 
-                roll = filter.getRoll();
-                pitch = filter.getPitch();
-                yaw = filter.getYaw();
+    const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
 
-                //sendData();
-                Serial.print(roll);
-                Serial.print("/");
-                Serial.print(pitch);
-                Serial.print("/");
-                Serial.println(yaw);
-                delay(16);
+
+    roll = euler.angle.roll;
+    pitch = euler.angle.pitch;
+    yaw = euler.angle.yaw;
+
+    // sendData();
+    Serial.print(roll);
+    Serial.print("/");
+    Serial.print(pitch);
+    Serial.print("/");
+    Serial.println(yaw);
+    delay(16);
     client = server.available(); // Listen for incoming clients
 
     if (client)
@@ -101,11 +114,11 @@ void loop()
             microsNow = micros();
             if (microsNow - microsPrevious >= microsPerReading)
             {
-                
+
                 microsPrevious = microsPrevious + microsPerReading;
             }
 
-            //delay(16);
+            // delay(16);
         }
     }
 }
@@ -120,10 +133,15 @@ void calcRollPitchYawMadgwick(int &aix, int &aiy, int &aiz, int &gix, int &giy, 
     gx = convertRawGyro(gix);
     gy = convertRawGyro(giy);
     gz = convertRawGyro(giz);
-    gyroScale = 1;
-    // update the filter, which computes orientation
-    filter.updateIMU(gx*gyroScale, gy*gyroScale, gz*gyroScale, ax, ay, az);
+    const FusionVector gyroscope = {gx, gy, gz}; // replace this with actual gyroscope data in degrees/s
+    const FusionVector accelerometer = {ax, ay, az}; // replace this with actual accelerometer data in g
+
+    FusionAhrsUpdateNoMagnetometer(&ahrs, gyroscope, accelerometer, SAMPLE_PERIOD);
+    // gyroScale = 1;
+    // // update the filter, which computes orientation
+    // filter.updateIMU(gx * gyroScale, gy * gyroScale, gz * gyroScale, ax, ay, az);
 }
+
 float convertRawAcceleration(int aRaw)
 {
     // since we are using 2 g range

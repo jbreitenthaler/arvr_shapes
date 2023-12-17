@@ -54,8 +54,8 @@ void draw() {
     fill(0);
     text("Roll: " + int(roll) + "\nPitch: " + int(pitch) + "\nYaw: " + int(yaw), -100, 265);
     
-    rotatingObj.setRotation(rotArduino);
-    rotatingObj.display();
+    rotatingObj.setRotation(rotImu);
+    //rotatingObj.display();
     targetObj.setRotation(rotations[taskCounter]);
     targetObj.display();
   } else {
@@ -78,8 +78,7 @@ void keyReleased() {
 boolean checkAccuracy() {
   if(abs(roll - rotations[taskCounter].x) < 2 &&
   abs(pitch - rotations[taskCounter].y) < 2 &&
-  abs(yaw - rotations[taskCounter].z) < 2 &&
-  ) {
+  abs(yaw - rotations[taskCounter].z) < 2) {
     return true;
   }
   return true;
@@ -100,9 +99,9 @@ void readData () {
       if (items.length > 1) {
         //--- Roll,Pitch in degrees
        // println("I'm here 2");
-        rotArduino.x = float(items[0]);
-        rotArduino.y = float(items[1]);
-        rotArduino.z = float(items[2]);
+        rotImu.x = float(items[0]);
+        rotImu.y = float(items[1]);
+        rotImu.z = float(items[2]);
         //println("Roll: " + roll + "     Pitch: " + pitch);
 
        }
@@ -134,13 +133,14 @@ class TaskObject {
     rotateY(radians(this.yaw));
     
     // 3D 0bject
-    textSize(30);
     fill(this.c);
     box (300, 200, 200); // Draw box
-    textSize(25);
     translate(-200,0,0);
     fill(this.c);
     box(100,200,50);
+    translate(150,125,0);
+    fill(this.c);
+    box(400,50,50);
     popMatrix();
   }
 

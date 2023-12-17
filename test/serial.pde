@@ -17,7 +17,6 @@ void setup() {
   size (1920, 1080, P3D);
   myPort = new Serial(this, "COM7", 115200); // starts the serial communication
   myPort.bufferUntil('\n');
-  
 }
 void draw() {
   serialEvent(myPort);
