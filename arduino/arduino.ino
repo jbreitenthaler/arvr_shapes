@@ -22,7 +22,6 @@ WiFiClient client;
 LSM6DS3 myIMU(I2C_MODE, 0x6A); // I2C device address 0x6A
                                //  put your setup code here, to run once:
 FusionAhrs ahrs;
-    
 
 #define SAMPLE_PERIOD (0.1f) // replace this with actual sample period
 
@@ -60,7 +59,7 @@ void setup()
     myIMU.settings.accelSampleRate = 833;
 
     FusionAhrsInitialise(&ahrs);
-    
+
     //    calculate_IMU_error();
     microsPerReading = 16000;
     microsPrevious = micros();
@@ -79,30 +78,15 @@ void setup()
 void loop()
 {
     //    calcRollPitchYaw();
-    aix = myIMU.readRawAccelX();
-    aiy = myIMU.readRawAccelY();
-    aiz = myIMU.readRawAccelZ();
-    gix = myIMU.readRawGyroX();
-    giy = myIMU.readRawGyroY();
-    giz = myIMU.readRawGyroZ();
 
-    calcRollPitchYawMadgwick(aix, aiy, aiz, gix, giy, giz);
-    
-
-    const FusionEuler euler = FusionQuaternionToEuler(FusionAhrsGetQuaternion(&ahrs));
-
-
-    roll = euler.angle.roll;
-    pitch = euler.angle.pitch;
-    yaw = euler.angle.yaw;
-
-    // sendData();
-    Serial.print(roll);
-    Serial.print("/");
-    Serial.print(pitch);
-    Serial.print("/");
-    Serial.println(yaw);
-    delay(16);
+    // Serial.print(quat.element.w);
+    // Serial.print("/");
+    // Serial.print(quat.element.x);
+    // Serial.print("/");
+    // Serial.print(quat.element.y);
+    // Serial.print("/");
+    // Serial.println(quat.element.z);
+    //delay(16);
     client = server.available(); // Listen for incoming clients
 
     if (client)
@@ -114,7 +98,29 @@ void loop()
             microsNow = micros();
             if (microsNow - microsPrevious >= microsPerReading)
             {
+                aix = myIMU.readRawAccelX();
+                aiy = myIMU.readRawAccelY();
+                aiz = myIMU.readRawAccelZ();
+                gix = myIMU.readRawGyroX();
+                giy = myIMU.readRawGyroY();
+                giz = myIMU.readRawGyroZ();
 
+                calcRollPitchYawMadgwick(aix, aiy, aiz, gix, giy, giz);
+
+                const FusionQuaternion quat = FusionAhrsGetQuaternion(&ahrs);
+
+                // roll = euler.angle.roll;
+                // pitch = euler.angle.pitch;
+                // yaw = euler.angle.yaw;
+                Serial.print(quat.element.w);
+                Serial.print("/");
+                Serial.print(quat.element.x);
+                Serial.print("/");
+                Serial.print(quat.element.y);
+                Serial.print("/");
+                Serial.println(quat.element.z);
+
+                sendData(quat);
                 microsPrevious = microsPrevious + microsPerReading;
             }
 
@@ -133,7 +139,7 @@ void calcRollPitchYawMadgwick(int &aix, int &aiy, int &aiz, int &gix, int &giy, 
     gx = convertRawGyro(gix);
     gy = convertRawGyro(giy);
     gz = convertRawGyro(giz);
-    const FusionVector gyroscope = {gx, gy, gz}; // replace this with actual gyroscope data in degrees/s
+    const FusionVector gyroscope = {gx, gy, gz};     // replace this with actual gyroscope data in degrees/s
     const FusionVector accelerometer = {ax, ay, az}; // replace this with actual accelerometer data in g
 
     FusionAhrsUpdateNoMagnetometer(&ahrs, gyroscope, accelerometer, SAMPLE_PERIOD);
@@ -162,25 +168,23 @@ float convertRawGyro(int gRaw)
     return g;
 }
 
-void sendData()
+void sendData(FusionQuaternion quat)
 {
     char buf[11];
     memset(buf, 0, sizeof(buf));
-    dtostrf(roll, 6, 3, buf);
+    dtostrf(quat.element.w, 6, 3, buf);
     client.write((const uint8_t *)&buf, sizeof(buf));
     client.write("/");
     memset(buf, 0, sizeof(buf));
-    dtostrf(pitch, 6, 3, buf);
+    dtostrf(quat.element.x, 6, 3, buf);
     client.write((const uint8_t *)&buf, sizeof(buf));
     client.write("/");
     memset(buf, 0, sizeof(buf));
-    dtostrf(yaw, 6, 3, buf);
+    dtostrf(quat.element.y, 6, 3, buf);
+    client.write((const uint8_t *)&buf, sizeof(buf));
+    client.write("/");
+    memset(buf, 0, sizeof(buf));
+    dtostrf(quat.element.z, 6, 3, buf);
     client.write((const uint8_t *)&buf, sizeof(buf));
     client.write("\n");
-
-    Serial.print(roll);
-    Serial.print("/");
-    Serial.print(pitch);
-    Serial.print("/");
-    Serial.println(yaw);
 }
