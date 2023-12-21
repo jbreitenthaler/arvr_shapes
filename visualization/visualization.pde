@@ -24,7 +24,7 @@ Rotation rotImu;
 String service_uuid = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
 String char_uuid = "beb5483e-36e1-4688-b7f5-ea07361b26a8"; 
 
-int nTasks = 25;
+int nTasks = 12;
 Rotation[] rotations = new Rotation[nTasks];
 Rotation[] trainingRotations = new Rotation[10];
 
@@ -34,7 +34,7 @@ int millisStartTask;
 int taskCounter;
 int[] errors = new int[nTasks];
 boolean progressToNext = false;
-
+boolean calibrate = false;
 
 State state = State.START;
 
@@ -54,7 +54,7 @@ void setup() {
 
   randomSeed(10);
 
-  for(int i = 0; i < 25; i++) {
+  for(int i = 0; i < taskNum; i++) {
     w = random(-1,1);
     x = random(-1,1);
     y = random(-1,1);
@@ -107,32 +107,45 @@ void startWindow() {
 }
 
 void training() {
-  //readData();
-  rotatingObj.setRotation(rotImu);
-  rotatingObj.display();
-  targetObj.setRotation(trainingRotations[taskCounter]);
-  targetObj.display();
-  if(checkAccuracy(trainingRotations[taskCounter])) {
-    rotatingObj.c = color(47, 158, 51);
-    progressToNext = true;
+  if(calibrate) {
+    textSize(50);
+    textAlign(CENTER);
+    fill(0);
+    text("Calibrate by aligning the object and pressing i", 0,0);
   } else {
-    rotatingObj.c = color(255, 204, 0);
-    progressToNext = false;
+    rotatingObj.setRotation(rotImu);
+    rotatingObj.display();
+    targetObj.setRotation(trainingRotations[taskCounter]);
+    targetObj.display();
+    if(checkAccuracy(trainingRotations[taskCounter])) {
+      rotatingObj.c = color(47, 158, 51);
+      progressToNext = true;
+    } else {
+      rotatingObj.c = color(255, 204, 0);
+      progressToNext = false;
+    }
   }
 }
 
 void task() {
-  //readData();
-  rotatingObj.setRotation(rotImu);
-  rotatingObj.display();
-  targetObj.setRotation(rotations[taskCounter]);
-  targetObj.display();
-  if(checkAccuracy(rotations[taskCounter])) {
-    //rotatingObj.c = color(47, 158, 51);
-    progressToNext = true;
+  
+  if(calibrate) {
+    textSize(50);
+    textAlign(CENTER);
+    fill(0);
+    text("Calibrate by aligning the object and pressing i", 0,0);
   } else {
-    //rotatingObj.c = color(255, 204, 0);
-    progressToNext = false;
+    rotatingObj.setRotation(rotImu);
+    rotatingObj.display();
+    targetObj.setRotation(rotations[taskCounter]);
+    targetObj.display();
+    if(checkAccuracy(rotations[taskCounter])) {
+      //rotatingObj.c = color(47, 158, 51);
+      progressToNext = true;
+    } else {
+      //rotatingObj.c = color(255, 204, 0);
+      progressToNext = false;
+    }
   }
 }
 
@@ -149,13 +162,16 @@ void taskDone() {
   textSize(50);
   fill(0);
   textAlign(CENTER);
-  text("Congrats you finished the taskset", 0,0);
-}
-
-void keyReleased() {
+  text("Congrats you finished the taskset", 0,0); //<>// //<>// //<>//
+} //<>// //<>// //<>//
+ //<>// //<>// //<>//
+void keyReleased() { //<>// //<>// //<>//
   if(key == 'i') {
-    sendInit();
-  }
+    sendInit(); //<>// //<>// //<>//
+    calibrate = false;  //<>// //<>// //<>//
+    millisStartTask = millis();    
+  } //<>// //<>// //<>//
+ //<>// //<>// //<>//
   if(key == ENTER && state == State.START) {
     state = State.TRAINING;
     //trainingRotations[taskCounter] = new Rotation(rotImu.qw + random(-0.1,0.1),rotImu.qx + random(-0.1,0.1),rotImu.qy + random(-0.1,0.1),rotImu.qz + random(-0.1,0.1) );
@@ -163,15 +179,17 @@ void keyReleased() {
     return;
   }
   if(key == ENTER && state == State.TRAINING_DONE) { //<>//
-    state = State.TASK; //<>//
+    state = State.TASK; //<>// //<>// //<>// //<>//
     millisStartTask = millis(); //<>//
-    return; //<>//
-  }
-  if(key == ' ' && progressToNext) { //<>//
+    return; //<>// //<>// //<>// //<>//
+  } //<>// //<>// //<>//
+  if(key == ' ' && progressToNext) { //<>// //<>// //<>// //<>//
     progressToNext = false; //<>//
-    rotatingObj.c = color(255, 204, 0);
-    switch(state) { //<>//
+    rotatingObj.c = color(255, 204, 0); //<>// //<>// //<>//
+    switch(state) { //<>// //<>// //<>// //<>//
       case TRAINING: //<>//
+        
+        calibrate = true; //<>// //<>// //<>//
         if (taskCounter < 9) {
           saveData(trainingRotations[taskCounter]);
           taskCounter++;
@@ -185,7 +203,8 @@ void keyReleased() {
         } //<>// //<>// //<>//
         break; //<>// //<>// //<>//
       case TASK:
-        if (taskCounter < 24) { //<>// //<>// //<>//
+        calibrate = true;
+        if (taskCounter < 14) { //<>// //<>// //<>//
           saveData(rotations[taskCounter]); //<>// //<>// //<>//
           taskCounter++;
         } else { //<>// //<>// //<>// //<>// //<>// //<>//
@@ -210,39 +229,39 @@ boolean checkAccuracy(Rotation target) {
   return false;
 }
 
-float getDistance(Rotation q1, Rotation q2) {
-  q1.normalize();
-  q2.normalize();
-  return 2*acos(abs(q1.qx*q2.qx + q1.qy*q2.qy + q1.qz*q2.qz + q1.qw*q2.qw));
+float getDistance(Rotation q1, Rotation q2) { //<>// //<>// //<>//
+  q1.normalize(); //<>// //<>// //<>//
+  q2.normalize(); //<>// //<>// //<>//
+  return 2*acos(abs(q1.qx*q2.qx + q1.qy*q2.qy + q1.qz*q2.qz + q1.qw*q2.qw)); //<>// //<>// //<>//
 }
-
-void initErrors() {
-  for(int i = 0; i < 25; i++) {
-    errors[i] = 0;
-  }
-}
-
+ //<>// //<>// //<>//
+void initErrors() { //<>// //<>// //<>//
+  for(int i = 0; i < taskNum; i++) {
+    errors[i] = 0; //<>// //<>// //<>//
+  } //<>// //<>// //<>//
+} //<>// //<>// //<>//
+ //<>// //<>// //<>//
 // Read data from the Serial Port
-void readData () { 
+void readData () {
   // reads the data from the Serial Port up to the character '.' and puts it into the String variable "data".
   if (myClient.available() > 0) { 
     // reads the data from the Serial Port up to the character '.' and puts it into the String variable "data".
     String data = myClient.readStringUntil('\n');
     //println("I'm here");
-    // if you got any bytes other than the linefeed:
-    if (data != null) {
-      data = trim(data);
+    // if you got any bytes other than the linefeed: //<>// //<>// //<>//
+    if (data != null) { //<>// //<>// //<>//
+      data = trim(data); //<>// //<>// //<>//
       // split the string at "/" //<>//
-      String items[] = split(data, '/'); //<>//
+      String items[] = split(data, '/'); //<>// //<>// //<>// //<>//
       if (items.length > 1) { //<>//
-        //--- Roll,Pitch in degrees //<>//
-       // println("I'm here 2");
+        //--- Roll,Pitch in degrees //<>// //<>// //<>// //<>//
+       // println("I'm here 2"); //<>// //<>// //<>//
         rotImu.qw = float(items[0]); //<>//
-        rotImu.qx = float(items[1]); //<>//
+        rotImu.qx = float(items[1]); //<>// //<>// //<>// //<>//
         rotImu.qy = float(items[2]);
-        rotImu.qz = float(items[3]); //<>//
-        //println("Roll: " + roll + "     Pitch: " + pitch); //<>//
- //<>//
+        rotImu.qz = float(items[3]); //<>// //<>// //<>// //<>//
+        //println("Roll: " + roll + "     Pitch: " + pitch); //<>// //<>// //<>// //<>//
+ //<>// //<>// //<>// //<>//
       } //<>//
     }
   }
@@ -314,12 +333,23 @@ class TaskObject {
     float m_20 = 2*(this.qx*this.qz - this.qy*this.qw);
     float m_21 = 2*(this.qy*this.qz + this.qx*this.qw);
     float m_22 = pow(this.qw,2) - pow(this.qx,2) - pow(this.qy,2) + pow(this.qz,2);
-
+    ///////////////////////////////////
+    // Sphere
+    // applyMatrix(
+    //   -m_00, -m_01, -m_02, 0.0f,
+    //   m_10, m_11, m_12, 0.0f,
+    //   m_20, m_21, m_22, 0.0f,
+    //   0.0f, 0.0f, 0.0f, 1.0f);
+      ////////////////////////////
+     /////////////////////////////
+     //Cubocta
     applyMatrix(
       m_00, m_01, m_02, 0.0f,
       -m_10, -m_11, -m_12, 0.0f,
       m_20, m_21, m_22, 0.0f,
       0.0f, 0.0f, 0.0f, 1.0f);
+    /////////////////////////////
+      
     
     // 3D 0bject
     fill(this.c);
