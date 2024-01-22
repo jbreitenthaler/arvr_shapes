@@ -54,7 +54,7 @@ void setup() {
 
   randomSeed(10);
 
-  for(int i = 0; i < taskNum; i++) {
+  for(int i = 0; i < nTasks; i++) {
     w = random(-1,1);
     x = random(-1,1);
     y = random(-1,1);
@@ -162,33 +162,34 @@ void taskDone() {
   textSize(50);
   fill(0);
   textAlign(CENTER);
-  text("Congrats you finished the taskset", 0,0); //<>// //<>// //<>//
-} //<>// //<>// //<>//
- //<>// //<>// //<>//
-void keyReleased() { //<>// //<>// //<>//
+  text("Congrats you finished the taskset", 0,0); //<>// //<>// //<>// //<>//
+} //<>// //<>// //<>// //<>//
+ //<>// //<>// //<>// //<>//
+void keyReleased() { //<>// //<>// //<>// //<>//
   if(key == 'i') {
-    sendInit(); //<>// //<>// //<>//
-    calibrate = false;  //<>// //<>// //<>//
+    sendInit(); //<>// //<>// //<>// //<>//
+    calibrate = false;  //<>// //<>// //<>// //<>//
     millisStartTask = millis();    
-  } //<>// //<>// //<>//
+    printDistances(); //<>//
+  } //<>// //<>// //<>// //<>//
  //<>// //<>// //<>//
   if(key == ENTER && state == State.START) {
     state = State.TRAINING;
     //trainingRotations[taskCounter] = new Rotation(rotImu.qw + random(-0.1,0.1),rotImu.qx + random(-0.1,0.1),rotImu.qy + random(-0.1,0.1),rotImu.qz + random(-0.1,0.1) );
     millisStartTask = millis();
     return;
-  }
-  if(key == ENTER && state == State.TRAINING_DONE) { //<>//
-    state = State.TASK; //<>// //<>// //<>// //<>//
-    millisStartTask = millis(); //<>//
-    return; //<>// //<>// //<>// //<>//
-  } //<>// //<>// //<>//
-  if(key == ' ' && progressToNext) { //<>// //<>// //<>// //<>//
-    progressToNext = false; //<>//
-    rotatingObj.c = color(255, 204, 0); //<>// //<>// //<>//
-    switch(state) { //<>// //<>// //<>// //<>//
+  } //<>//
+  if(key == ENTER && state == State.TRAINING_DONE) { //<>// //<>//
+    state = State.TASK; //<>// //<>// //<>// //<>// //<>//
+    millisStartTask = millis(); //<>// //<>//
+    return; //<>// //<>// //<>// //<>// //<>//
+  } //<>// //<>// //<>// //<>//
+  if(key == ' ' && progressToNext) { //<>// //<>// //<>// //<>// //<>//
+    progressToNext = false; //<>// //<>//
+    rotatingObj.c = color(255, 204, 0); //<>// //<>// //<>// //<>//
+    switch(state) { //<>// //<>// //<>// //<>// //<>//
       case TRAINING: //<>//
-        
+         //<>//
         calibrate = true; //<>// //<>// //<>//
         if (taskCounter < 9) {
           saveData(trainingRotations[taskCounter]);
@@ -196,18 +197,18 @@ void keyReleased() { //<>// //<>// //<>//
           //trainingRotations[taskCounter] = new Rotation(rotImu.qw + random(-0.2,0.2),rotImu.qx + random(-0.2,0.2),rotImu.qy + random(-0.2,0.2),rotImu.qz + random(-0.2,0.2) );
         } else {
           state = State.TRAINING_DONE;
-          saveData(trainingRotations[taskCounter]);
+          saveData(trainingRotations[taskCounter]); //<>//
           writeDataToFile("training"); //<>// //<>// //<>// //<>//
-          initErrors();
-          taskCounter = 0; //<>// //<>// //<>// //<>//
-        } //<>// //<>// //<>//
+          initErrors(); //<>//
+          taskCounter = 0; //<>// //<>// //<>// //<>// //<>//
+        } //<>// //<>// //<>// //<>//
         break; //<>// //<>// //<>//
       case TASK:
-        calibrate = true;
-        if (taskCounter < 14) { //<>// //<>// //<>//
+        calibrate = true; //<>//
+        if (taskCounter < (nTasks - 1)) { //<>// //<>// //<>// //<>//
           saveData(rotations[taskCounter]); //<>// //<>// //<>//
-          taskCounter++;
-        } else { //<>// //<>// //<>// //<>// //<>// //<>//
+          taskCounter++; //<>//
+        } else { //<>// //<>// //<>// //<>// //<>// //<>// //<>//
           state = State.DONE; //<>// //<>// //<>// //<>// //<>// //<>//
           saveData(rotations[taskCounter]);
           writeDataToFile("task");
@@ -221,39 +222,47 @@ void keyReleased() { //<>// //<>// //<>//
     
   }
 }
-
-boolean checkAccuracy(Rotation target) {
-  if(getDistance(target, rotImu) < 0.08) {
-    return true;
+void printDistances() {
+  println("Distances");
+  Rotation calibratedRot = rotImu;
+  for(int i = 0; i < nTasks; i++) {
+    println("Task " + (i + 1));
+    println(convertToDegrees(getDistance(calibratedRot, rotations[i])));
   }
-  return false;
+} //<>//
+ //<>//
+boolean checkAccuracy(Rotation target) { //<>//
+  if(getDistance(target, rotImu) < 0.08) { //<>//
+    return true;
+  } //<>//
+  return false; //<>//
 }
-
-float getDistance(Rotation q1, Rotation q2) { //<>// //<>// //<>//
-  q1.normalize(); //<>// //<>// //<>//
-  q2.normalize(); //<>// //<>// //<>//
+ //<>//
+float getDistance(Rotation q1, Rotation q2) { //<>// //<>// //<>// //<>//
+  q1.normalize(); //<>// //<>// //<>// //<>//
+  q2.normalize(); //<>// //<>// //<>// //<>//
   return 2*acos(abs(q1.qx*q2.qx + q1.qy*q2.qy + q1.qz*q2.qz + q1.qw*q2.qw)); //<>// //<>// //<>//
 }
  //<>// //<>// //<>//
 void initErrors() { //<>// //<>// //<>//
-  for(int i = 0; i < taskNum; i++) {
+  for(int i = 0; i < nTasks; i++) {
     errors[i] = 0; //<>// //<>// //<>//
   } //<>// //<>// //<>//
-} //<>// //<>// //<>//
- //<>// //<>// //<>//
-// Read data from the Serial Port
-void readData () {
-  // reads the data from the Serial Port up to the character '.' and puts it into the String variable "data".
-  if (myClient.available() > 0) { 
-    // reads the data from the Serial Port up to the character '.' and puts it into the String variable "data".
-    String data = myClient.readStringUntil('\n');
-    //println("I'm here");
-    // if you got any bytes other than the linefeed: //<>// //<>// //<>//
+} //<>// //<>// //<>// //<>//
+ //<>// //<>// //<>// //<>//
+// Read data from the Serial Port //<>//
+void readData () { //<>//
+  // reads the data from the Serial Port up to the character '.' and puts it into the String variable "data". //<>//
+  if (myClient.available() > 0) {  //<>//
+    // reads the data from the Serial Port up to the character '.' and puts it into the String variable "data". //<>//
+    String data = myClient.readStringUntil('\n'); //<>//
+    //println("I'm here"); //<>//
+    // if you got any bytes other than the linefeed: //<>// //<>// //<>// //<>//
     if (data != null) { //<>// //<>// //<>//
-      data = trim(data); //<>// //<>// //<>//
-      // split the string at "/" //<>//
-      String items[] = split(data, '/'); //<>// //<>// //<>// //<>//
-      if (items.length > 1) { //<>//
+      data = trim(data); //<>// //<>// //<>// //<>//
+      // split the string at "/" //<>// //<>//
+      String items[] = split(data, '/'); //<>// //<>// //<>// //<>// //<>//
+      if (items.length > 1) { //<>// //<>//
         //--- Roll,Pitch in degrees //<>// //<>// //<>// //<>//
        // println("I'm here 2"); //<>// //<>// //<>//
         rotImu.qw = float(items[0]); //<>//
@@ -261,20 +270,20 @@ void readData () {
         rotImu.qy = float(items[2]);
         rotImu.qz = float(items[3]); //<>// //<>// //<>// //<>//
         //println("Roll: " + roll + "     Pitch: " + pitch); //<>// //<>// //<>// //<>//
- //<>// //<>// //<>// //<>//
-      } //<>//
-    }
+ //<>// //<>// //<>// //<>// //<>//
+      } //<>// //<>//
+    } //<>//
   }
-}
+} //<>//
 
-void writeDataToFile(String filename) {
-  Table table = new Table();
+void writeDataToFile(String filename) { //<>//
+  Table table = new Table(); //<>//
   
-  table.addColumn("taskNum"); //<>// //<>// //<>// //<>//
+  table.addColumn("taskNum"); //<>// //<>// //<>// //<>// //<>//
   table.addColumn("completionTime"); //<>// //<>// //<>// //<>//
-  table.addColumn("angleDiff"); //<>// //<>// //<>//
-  table.addColumn("errors");
-   //<>// //<>// //<>//
+  table.addColumn("angleDiff"); //<>// //<>// //<>// //<>//
+  table.addColumn("errors"); //<>//
+   //<>// //<>// //<>// //<>//
   for (int i = 0; i < taskCounter + 1; i++) {
     TableRow newRow = table.addRow(); //<>// //<>// //<>//
     newRow.setInt("taskNum", i + 1); //<>// //<>// //<>//
@@ -335,19 +344,19 @@ class TaskObject {
     float m_22 = pow(this.qw,2) - pow(this.qx,2) - pow(this.qy,2) + pow(this.qz,2);
     ///////////////////////////////////
     // Sphere
-    // applyMatrix(
-    //   -m_00, -m_01, -m_02, 0.0f,
-    //   m_10, m_11, m_12, 0.0f,
-    //   m_20, m_21, m_22, 0.0f,
-    //   0.0f, 0.0f, 0.0f, 1.0f);
+     applyMatrix(
+       -m_00, -m_01, -m_02, 0.0f,
+       m_10, m_11, m_12, 0.0f,
+       m_20, m_21, m_22, 0.0f,
+       0.0f, 0.0f, 0.0f, 1.0f);
       ////////////////////////////
      /////////////////////////////
      //Cubocta
-    applyMatrix(
-      m_00, m_01, m_02, 0.0f,
-      -m_10, -m_11, -m_12, 0.0f,
-      m_20, m_21, m_22, 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f);
+    //applyMatrix(
+    //  m_00, m_01, m_02, 0.0f,
+    //  -m_10, -m_11, -m_12, 0.0f,
+    //  m_20, m_21, m_22, 0.0f,
+    //  0.0f, 0.0f, 0.0f, 1.0f);
     /////////////////////////////
       
     
