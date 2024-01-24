@@ -64,9 +64,21 @@
             Before diving into the user study, we decided to do a preliminary study in order to eliminate one of the three shapes beforehand. The preliminary study was done on 4 participants and the task was to try to mimic the rotation of an object displayed on the screen by a video of approximately 30 seconds,
             without having any visual feedback. To evaluate the three shapes at this stage we based our decision solely on the feedback provided by the participants. After performing the same task with all 
             three shapes we asked them to give a personal classification of the three shapes from best to worst.  <br>
-            After completing this part we designed the final experiment. Firstly we ask the participant to perform a mental rotation test, in order to understand if the results we get from the docking task show a correlation with the ability of a person to identify the same object in different orientations. After performing this test the participants were faced with a challenge in which they had to perform a docking task with both of the two shapes left. This task consists in moving an object from a starting position to a target position, where the starting and target position only differ in their respective rotation. In our case the rotating and target object are the same: a block that we designed to be distinguishable in all rotations. The participants have to move the object from the starting position to the target position by rotating the TUI in their hand. They are required to perform the task with both of the shapes while the order in which the two shapes are given to the participants is alternated (to address possible learning transferred between the two shapes). 
+            After completing this part we designed the final experiment. Firstly we ask the participant to perform a mental rotation test, in order to understand if the results we get from the docking task show a correlation with the ability of a person to identify the same object in different orientations. It has to be noted that this test was performed without time constraints. After performing this test the participants were faced with a challenge in which they had to perform a docking task with both of the two shapes left. This task consists in moving an object from a starting position to a target position, where the starting and target position only differ in their respective rotation. In our case the rotating and target object are the same: a block that we designed to be distinguishable in all rotations. The participants have to move the object from the starting position to the target position by rotating the TUI in their hand. They are required to perform the task with both of the shapes while the order in which the two shapes are given to the participants is alternated (to address possible learning transferred between the two shapes). 
             In order to help us understand which one is the best shape according to the hypothesis we made, we measured the time needed to complete the task, the number of errors and the distance between the position reached
-            and the correct one, concerning the quantitative data. For the qualitative data we asked the participants to fill two questionnaires, the Nasa-TLX and the SUS.
+            and the correct one, concerning the quantitative data. To calculate the rotational distance between two quaternions the following formula was used:
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <mn>&#952;</mn>
+                <mo>=</mo>
+                <mo>arccos(</mo>
+                <mo>&lt;</mo>
+                <mn>q1</mn>
+                <mo>,</mo>
+                <mn>q2</mn>
+                <mo>&gt;</mo>
+                <mo>)</mo>
+            </math><br/> 
+             For the qualitative data we asked the participants to fill two questionnaires, the Nasa-TLX [5] and the SUS [6].
             The experiment was divided in two phases, a training phase and a test phase. The participants always started with a training where they had to perform 10 tasks. During this phase they recieved help by 
             visual cues to understand what the degree of precision required to complete the task is. To validate a task the user had to press the spacebar when they were close enough to the target rotation, with a maximum
             distance from 5 degrees which was imposed by the system. In particular, the object they were rotating was coloured green when they were in the accepted range of precision.
@@ -77,7 +89,7 @@
         <h3 id="impl">Implementation</h3>
         <p>In this section we are going to briefly present the implementation of what we have done to perform the experiment. <br>
             The first thing we did was to build the models to be used in the preliminary study. We had to build the three shapes and we decided to laser cut both the cuboctahedron and the cube while for the sphere
-            we used a tennis ball. Regarding the dimension we chose to take the volume of the tennisball at 149 cm^3 as a reference. We then designed the other two shapes to have apprroximately the same volume accordingly.
+            we used a tennis ball. Regarding the dimension we chose to take the volume of the tennisball at 149 cm<sup>3</sup> as a reference. We then designed the other two shapes to have apprroximately the same volume accordingly.
             At this stage we did not have the need to equip the objects with sensors considering the preliminary study was based only on a replication of movements.<br>
             After completing the preliminary study we needed to integrate sensors to detect the rotation in the two winner shapes. We used an IMU, the Grove - 6-Axis Accelerometer&Gyroscope(BMI088), which is a 6 DOF
             sensor combining both the measurements of the accelerometer and the gyroscope to detect the rotation of the object with higher precision. The sensor was then connected to an Arduino XIAO ESP32C3, which was powered by a 
@@ -85,9 +97,9 @@
             object and firmly attached to it. Each prototype had his own sensor and Arduino. <br>
             To get the data from the sensor we used an arduino script to create a WiFi server to which we could connect to get the data. The most important implementation detail is that even if the sensor was calibrated,
             we still had a problem of drift, which is common for this kind of sensors, so in order to solve the problem we used the C library Fusion which implements the Madgwick AHRS algorithm giving us a filter to almost eliminate 
-            the sensor drift. The filter output was sent to the WiFi client as quaternions. <br>
+            the sensor drift. A small drift was still left after the filter application, worsening over time, so we decided to have the participants to do a recalibration of the sensor after every task. The filter output was sent to the WiFi client as quaternions. <br>
             To visually display and rotate the object we implemented a Processing sketch connecting to the WiFi server and reading data from the sensor in real time. All of the test logic was also implemented in this sketch as well as the computation of all needed metrics to evaluate the performance of the participants.</p>
-        <h2>Results</h2>
+        <h2 id="results">Results</h2>
         <p>In this section we are going to discuss the results obtained from the experiments, analyzing firstly the objective measures we collected and concluding with a brief overview over the subjective questionnaires.<br/><br/>
             The preliminary study gave us the following ranking and therefore eliminated the cube: 
 <ol>
@@ -100,7 +112,7 @@
             between these two variables which is reported in <a href="#corr_rot">Table 1</a>. <br/><br/>
             <table id="corr_rot" border="1">
                 <th></th>
-                <th>Cubocathedron</th>
+                <th>Cuboctahedron</th>
                 <th>Sphere</th>
                 <th>Mental Rotation Test</th>
                 <tr>
@@ -123,11 +135,67 @@
                 </tr>
             </table>
             <br/>
-            Table 1: Correlation table between the mental rotation test and the average completion time for one task for both of the two shapes. A value higher than 0.7(-0.7) indicates a strong correlation, while a value lower then 0.3(-0.3) indicates a
+            Table 1: Correlation table between the mental rotation test and the average completion time for one task for both of the two shapes. 
+            <br/><br/>
+<table id="corr_rot2" border="1">
+                <th></th>
+                <th>Cuboctahedron</th>
+                <th>Sphere</th>
+                <th>Mental Rotation Test</th>
+                <tr>
+                    <th>Cuboctahedron</th>
+                    <td>1</td>
+                    <td>N.A.</td>
+                    <td>N.A.</td>
+                </tr>
+                <tr>
+                    <th>Sphere</th>
+                    <td>0.84</td>
+                    <td>1</td>
+                    <td>N.A.</td>
+                </tr>
+                <tr>
+                    <th>Mental Rotation Test</th>
+                    <td>0.96</td>
+                    <td>0.85</td>
+                    <td>1</td>
+                </tr>
+        </table>
+        <br/>
+Table 2: Correlation table between the mental rotation test and the average completion time for one task for both of the two shapes, Group 1. 
+<br/><br/>
+<table id="corr_rot3" border="1">
+                <th></th>
+                <th>Cuboctahedron</th>
+                <th>Sphere</th>
+                <th>Mental Rotation Test</th>
+                <tr>
+                    <th>Cuboctahedron</th>
+                    <td>1</td>
+                    <td>N.A.</td>
+                    <td>N.A.</td>
+                </tr>
+                <tr>
+                    <th>Sphere</th>
+                    <td>0.5</td>
+                    <td>1</td>
+                    <td>N.A.</td>
+                </tr>
+                <tr>
+                    <th>Mental Rotation Test</th>
+                    <td>0.72</td>
+                    <td>0.59</td>
+                    <td>1</td>
+                </tr>
+            </table>
+            <br/>
+Table 3: Correlation table between the mental rotation test and the average completion time for one task for both of the two shapes, Group 2. 
+
+<br/> A value higher than 0.7(-0.7) indicates a strong correlation, while a value lower then 0.3(-0.3) indicates a
             mild correlation between the variables.
-            <p>The first thing to do when performing a correlation score is to be sure that it makes sense to compute such a value in the specific use case. We think it was sensful because we wanted to see if there was a relation between the performance in test and in the task. What we can see from the table is that there is an high correlation between having a bad score on the test and a high completion time in the case of the cuboctahedron. This might be due the fact that the shape is uncommon and is not easy for the participants to easily understand the rotation they are performing with this shape. On the other hand, the correlation for the sphere
-                is quite mild, and for the opposite reason this might be because the sphere is a shape we are used to see.
-            </p>
+            <br/>
+            <p>The first thing to do when performing a correlation score is to be sure that it makes sense to compute such a value in the specific use case. We think it was sensful because we wanted to see if there was a relation between the performance in the mental rotation test the task. What we can derive from these correlations is that a bad score on the mental rotation test is very likely to lead to a high completion time for the rotation tasks with the TUI. Looking at Table 2 we see that for
+                Group 1 there is a very high correlation between the two variables. This group had bad scores on the mental rotation test throughout. However the other group with mixed scores on the mental rotation test, does not show this high correlation.This might be due the fact that the shape is uncommon and is not easy for the participants to easily understand the rotation they are performing with this shape, even if they show good capabilities in understanding rotations.             </p>
             <br>
             After analyzing the this correlation we will now focus on understanding if there is any form of learning during the training phase. To understand this we will focus on <a href="#fig-training-cubo">Picture 1</a>, which represents the two curves for the two shapes divided per group.
             <br/>
@@ -166,10 +234,10 @@
             <p>What we see from <a href="#fig-time-task">Figure 4</a> is that on average the two shapes are equivalent for most of the tasks, but there are some tasks where one of the two looks better than the other,
                 so we decided to investigate this finding by analyzing the task in terms of their difference in rotational distance, meaning the distance between the starting position and the target position. Performing this analysis we could
                 understand if the difference in completion time has a correlation to the difference in rotational distance. Furthermore, it could also tell us if there is a relation between the distance travelled and the performance of 
-                one shape with respect to the other. The results of this analysis are reported in <a href="#tab-corr-2">Table 2</a>.
+                one shape with respect to the other. The results of this analysis are reported in <a href="#tab-corr-2">Table 4</a>.
             </p>
             <table id="tab-corr-2" border="1">
-                <th>Cubocathedron</th>
+                <th>Cuboctahedron</th>
                 <th>Time</th>
                 <th>Distance</th>
                 <th>Precision</th>
@@ -218,7 +286,7 @@
                 </tr>
             </table>
             <br/>
-            Table 2: Correlation table between the distance travelled and the completion time and precision for the two shapes. A value higher than 0.7(-0.7) indicates a strong correlation, while a value lower then 0.3(-0.3) indicates a mild correlation between the variables. The table
+            Table 4: Correlation table between the distance travelled and the completion time and precision for the two shapes. A value higher than 0.7(-0.7) indicates a strong correlation, while a value lower then 0.3(-0.3) indicates a mild correlation between the variables. The table
             on top is related to the results of the cuboctahedron, while the table below is related to the sphere.
             <p>Analyzing the table, we notice that there is no strong correlation between any of the variables. Focusing on the one of our interest, we derive that there is a mild connection between the distance to be
                 travelled and the completion time. In particular, when the distance is higher, the completion time tends to decrease and this is true for both of the shapes, as we can notice from the negative correlation in the second row of the time  column.
@@ -247,6 +315,16 @@
             cuboctahedron of 73. Despite the difference not being that large, the general usabilty of the sphere was more appreciated by the participants.
         </p>
         <h2>Conclusion</h2>
+        <p>
+            In this project we tried to find the optimal shape for a TUI used to rotate an object in a 3D virtual environment. For this purpose three different shapes were chosen: A sphere, a cuboctahedron and a cube. We conducted two studies, a small preliminary study to eliminate one of the
+            initial shapes and a bigger final study with the goal to come a decision on the shape to use in such a context. This should be achieved by collecting quantitative as well as qualitative data, for more details see sections <a href="#appr">Approach</a> and <a href="#results">Results</a>. 
+            In the preliminary study it became clear that the cube was not going to be the best shape for our purpose, so the cuboctahedron and the sphere were implemented for the final study.
+            Looking at the data from the final study we could not conclude a winner in this scenario. The quantitative data did show great similarity between the two shapes as well as a high variation
+            in the collected data, rendering a decision impossible. Workload analysis from the Nasa-TLX did not yield a decisive result and user acceptance from the SUS was also similar for both shapes however with average scores of 74 for the Cuboctahedron and 81 for the Sphere,
+             both in an accepable range. Overall the sphere has a slight advantage, however too small to be considered decisive for an experiment with a small number of participants. In the end the cuboctahedron and the sphere both
+             show good capabilities to be used as a TUI for 3D rotation, to decide on one shape however more research needs to be done. For future research it should be considered to choose an implementation with a better appproach to deal with drift,
+              as the recalibration interferes with the experiment in a way that increases frustration of the participants.
+        </p>
         <h2>References</h2>
         <p>
             <ol>
@@ -254,6 +332,8 @@
                 <li>Sheridan, Jennifer G., and Gerd Kortuem. "Affordance-based design of physical interfaces for ubiquitous environments." International Symposium on Ubiquitious Computing Systems. Berlin, Heidelberg: Springer Berlin Heidelberg, 2006.</li>
                 <li>Abdelmohsen, SHERIF M., and Ellen Yi-Luen Do. "TangiCAD: Tangible interface for manipulating architectural 3D models." Proc. CAADRIA. Vol. 7. 2007.</li>
                 <li>Ferscha, Alois, et al. "Physical shortcuts for media remote controls." 2nd International Conference on INtelligent TEchnologies for interactive enterTAINment. 2010.</li>
+                <li>Hart, Sandra G., and Lowell E. Staveland. "Development of NASA-TLX (Task Load Index): Results of empirical and theoretical research." Advances in psychology. Vol. 52. North-Holland, 1988. 139-183.</li>
+                <li>Brook, John. "SUS: a" quick and dirty" usability scale." Usability evaluation in industry (1996).</li>
             </ol>
         </p>
 
