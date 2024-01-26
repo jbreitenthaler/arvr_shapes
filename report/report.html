@@ -106,7 +106,7 @@
             To get the data from the sensor we used an arduino script to create a WiFi server to which we could connect to get the data. The most important implementation detail is that even if the sensor was calibrated,
             we still had a problem of drift, which is common for this kind of sensors, so in order to solve the problem we used the C library Fusion which implements the Madgwick AHRS algorithm giving us a filter to almost eliminate 
             the sensor drift. A small drift was still left after the filter application, worsening over time, so we decided to have the participants to do a recalibration of the sensor after every task. The filter output was sent to the WiFi client as quaternions. <br>
-            To visually display and rotate the object we implemented a Processing sketch connecting to the WiFi server and reading data from the sensor in real time. All of the test logic was also implemented in this sketch as well as the computation of all needed metrics to evaluate the performance of the participants.</p>
+            To visually display and rotate the object we implemented a Processing sketch connecting to the WiFi server and reading data from the sensor in real time. All of the test logic was also implemented in this sketch as well as the computation of all needed metrics to evaluate the performance of the participants. See implementation details <a href="#git-link">here</a>.</p>
         <img width="49%" src="./images/cubo_inside.jpg"/>
         <img width="49%" src="./images/sphere_inside.jpg"/>
         <br/>
@@ -347,6 +347,10 @@ Table 3: Correlation table between the mental rotation test and the average comp
                 <li>Hart, Sandra G., and Lowell E. Staveland. "Development of NASA-TLX (Task Load Index): Results of empirical and theoretical research." Advances in psychology. Vol. 52. North-Holland, 1988. 139-183.</li>
                 <li>Brook, John. "SUS: a" quick and dirty" usability scale." Usability evaluation in industry (1996).</li>
             </ol>
+        </p>
+        <h2>Appendix</h2>
+        <p id="git-link">
+            Link to Github repository: <a href="https://github.com/jbreitenthaler/arvr_shapes">https://github.com/jbreitenthaler/arvr_shapes</a>
         </p>
 
     </div>        
