@@ -170,7 +170,7 @@ void keyReleased() { //<>// //<>// //<>// //<>//
     sendInit(); //<>// //<>// //<>// //<>//
     calibrate = false;  //<>// //<>// //<>// //<>//
     millisStartTask = millis();    
-    printDistances(); //<>//
+    //printDistances(); //<>//
   } //<>// //<>// //<>// //<>//
  //<>// //<>// //<>//
   if(key == ENTER && state == State.START) {
@@ -344,19 +344,19 @@ class TaskObject {
     float m_22 = pow(this.qw,2) - pow(this.qx,2) - pow(this.qy,2) + pow(this.qz,2);
     ///////////////////////////////////
     // Sphere
-     applyMatrix(
-       -m_00, -m_01, -m_02, 0.0f,
-       m_10, m_11, m_12, 0.0f,
-       m_20, m_21, m_22, 0.0f,
-       0.0f, 0.0f, 0.0f, 1.0f);
+    // applyMatrix(
+    //   -m_00, -m_01, -m_02, 0.0f,
+    //   m_10, m_11, m_12, 0.0f,
+    //   m_20, m_21, m_22, 0.0f,
+    //   0.0f, 0.0f, 0.0f, 1.0f);
       ////////////////////////////
      /////////////////////////////
      //Cubocta
-    //applyMatrix(
-    //  m_00, m_01, m_02, 0.0f,
-    //  -m_10, -m_11, -m_12, 0.0f,
-    //  m_20, m_21, m_22, 0.0f,
-    //  0.0f, 0.0f, 0.0f, 1.0f);
+    applyMatrix(
+      m_00, m_01, m_02, 0.0f,
+      -m_10, -m_11, -m_12, 0.0f,
+      m_20, m_21, m_22, 0.0f,
+      0.0f, 0.0f, 0.0f, 1.0f);
     /////////////////////////////
       
     

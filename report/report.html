@@ -58,9 +58,17 @@
         <h2>Hypothesis</h2>
         <p>Our hypothesis shifted over the course of this project, starting from the idea of the cube being the best shape, as it is the most widely used and provides the best ability to orient the shape itself to specific angles. However when starting to implement the prototype we noticed that being able to rotate the shape to specific angles is not relevant. Due to this finding we shifted to the sphere being the most optimal shape for this purpose as it is the easiest to rotate with one hand.</p>
         <h2 id="appr">Approach</h2>
+
         <h3>Experimental Protocol</h3>
         <p> In the following section we will discuss our approach to find this optimal shape, providing also insights on the <a href="#impl">implementation</a> we designed.<br>
             In order to start our experiment the first step was to define three shapes we wanted to test. We decided to use the shape of a cube, a cuboctahedron and a sphere. The cube and the cuboctahedron were chosen because of their use in the papers described in the <a href="#rel_work">Related Work</a> section. In addition to that we chose a sphere due to its characteristic of a consistent surface, independent of its orientation making it very simple to rotate. <br>
+            <img width="33%" src="./images/cube_outside.png"/>
+            <img width="33%" src="./images/sphere_outside.jpg"/>
+            <img width="33%" src="./images/cubo_outside.jpg"/>
+            <br/>
+            <br/>
+            Image 1: The three chosen shapes in order of appearance: Cube, Sphere, Cuboctahedron 
+            <br/><br/>
             Before diving into the user study, we decided to do a preliminary study in order to eliminate one of the three shapes beforehand. The preliminary study was done on 4 participants and the task was to try to mimic the rotation of an object displayed on the screen by a video of approximately 30 seconds,
             without having any visual feedback. To evaluate the three shapes at this stage we based our decision solely on the feedback provided by the participants. After performing the same task with all 
             three shapes we asked them to give a personal classification of the three shapes from best to worst.  <br>
@@ -99,6 +107,10 @@
             we still had a problem of drift, which is common for this kind of sensors, so in order to solve the problem we used the C library Fusion which implements the Madgwick AHRS algorithm giving us a filter to almost eliminate 
             the sensor drift. A small drift was still left after the filter application, worsening over time, so we decided to have the participants to do a recalibration of the sensor after every task. The filter output was sent to the WiFi client as quaternions. <br>
             To visually display and rotate the object we implemented a Processing sketch connecting to the WiFi server and reading data from the sensor in real time. All of the test logic was also implemented in this sketch as well as the computation of all needed metrics to evaluate the performance of the participants.</p>
+        <img width="49%" src="./images/cubo_inside.jpg"/>
+        <img width="49%" src="./images/sphere_inside.jpg"/>
+        <br/>
+        Image 2: A look inside the final prototypes <br/>
         <h2 id="results">Results</h2>
         <p>In this section we are going to discuss the results obtained from the experiments, analyzing firstly the objective measures we collected and concluding with a brief overview over the subjective questionnaires.<br/><br/>
             The preliminary study gave us the following ranking and therefore eliminated the cube: 
@@ -200,16 +212,16 @@ Table 3: Correlation table between the mental rotation test and the average comp
             After analyzing the this correlation we will now focus on understanding if there is any form of learning during the training phase. To understand this we will focus on <a href="#fig-training-cubo">Picture 1</a>, which represents the two curves for the two shapes divided per group.
             <br/>
             <br/>
-            <img src="../Results/Pictures/training_improvement_cubo.png" id="fig-training-cubo" width="49%">
-            <img src="../Results/Pictures/training_improvement_sphere.png" id="fig-training-sphere" width="49%">
+            <img src="./images/training_improvement_cubo.png" id="fig-training-cubo" width="49%">
+            <img src="./images/training_improvement_sphere.png" id="fig-training-sphere" width="49%">
             Figure 1: Images showing the learning curves for the training phase of the two shapes. Group 1 refers to the particpants that started with the cuboctahedron, while Group 2 refers to those who started with the sphere.
             <p> Observing the graphs we can see that the performance of the two shapes after 2/3 tasks is equivalent, meaning that the training necessary to obtain a good level of performance is reached very soon, and after that point
                 we observe that the results are task-related and no more dependent on the amount of training that one got on a specific shape.
             </p>
             After evaluating the data we collected during the training phase, we can finally move on to the test phase. We will firstly put our attention on understanding the distribution of the data in general and the general results we got, concluding the considerations on the test phase with an analysis taskwise rather than participant-wise. 
             In <a href="#fig-box-plot">Figure 2</a>, we can see the box plot of the overall data, both for the completion time and the accuracy.<br><br/>
-            <img src="../Results/Pictures/box_precision.png" id="fig-box-plot" width="49%">
-            <img src="../Results/Pictures/box_completion_time.png" id="fig-box-plot" width="49%"> 
+            <img src="./images/box_precision.png" id="fig-box-plot" width="49%">
+            <img src="./images/box_completion_time.png" id="fig-box-plot" width="49%"> 
             Figure 2: Images reporting the box plots for the two shapes for the two metrics we measured, completion time and precision.
             <p>If we look at the box plot for the precision data, what we can derive is that the two shapes are almost equivalent. If we look not only at the lower value reached but also at the distribution of the values (more details on the 
                 variance in the <a href="#fig-std">Fig 3</a>), they fall into each other meaning we cannot derive any conclusion from this graph apart from the fact that they can be considered comparable.<br>
@@ -218,8 +230,8 @@ Table 3: Correlation table between the mental rotation test and the average comp
             After plotting these graphs we wanted to investigate the results even further and so we decided to plot the graph below which represents the mean over the standard deviation to gather more insight on the spread of the data.
             <br/>
             <br/>
-            <img src="../Results/Pictures/precision_stdev.png" id="fig-std" width="49%">
-            <img src="../Results/Pictures/completion_time_stdev.png" id="fig-std" width="49%">
+            <img src="./images/precision_stdev.png" id="fig-std" width="49%">
+            <img src="./images/completion_time_stdev.png" id="fig-std" width="49%">
             Figure 3: Graphs reporting the average and the standard deviation for the two shapes in the three cases, Group 1, Group 2 and overall data for each shape.
             <p>What we see in this graph confirms what we have seen in <a href="#fig-box-plot">Figure 2</a>, and we can see that the performances over these two shapes are again comparable, and the variance is so high that
                 we cannot conclude anything because we cannot find any consistency in any of the metrics we considered.
@@ -229,7 +241,7 @@ Table 3: Correlation table between the mental rotation test and the average comp
             Doing an taskwise analysis we wanted to understand whether there are tasks in the taskset that are distinguishable in terms of completion time and precision with respect to the two shapes.
             <br/>
             <br/>
-            <img src="../Results/Pictures/completion_time_per_task.png" id="fig-time-task" width="100%">
+            <img src="./images/completion_time_per_task.png" id="fig-time-task" width="100%">
             Figure 4: Bar chart representing the completion time of each task averaged on all the participants for the two shapes.
             <p>What we see from <a href="#fig-time-task">Figure 4</a> is that on average the two shapes are equivalent for most of the tasks, but there are some tasks where one of the two looks better than the other,
                 so we decided to investigate this finding by analyzing the task in terms of their difference in rotational distance, meaning the distance between the starting position and the target position. Performing this analysis we could
@@ -298,7 +310,7 @@ Table 3: Correlation table between the mental rotation test and the average comp
             the one that was more relevant in the task performed for each pair. These values are going to be used later as weights to compute a weighted average of the raw scores.
             <br/>
             <br/>
-            <img src="../Results/Pictures/Nasa-TLX.png" id="fig-nasa" width="100%">
+            <img src="./images/Nasa-TLX.png" id="fig-nasa" width="100%">
             Figure 5: Box plot representing the results of the Nasa-TLX questionnaire for the two shapes. A lower value indicates a lower workload.
             <p><a href="#fig-nasa">Figure 5</a> shows a box plot representing the results of the questionnaire, reporting all the 6 factors and the overall workload for both of the shapes. What we can see is that even in this case
                 the two shapes are comparable and there is none which felt heavier in terms of workload, and the fact that the variance is so high cannot give us any more details even looking at the factors independently.
@@ -307,7 +319,7 @@ Table 3: Correlation table between the mental rotation test and the average comp
             proposed using a rating from disagreement to agreement in 5 stages.  
             <br/>
             <br/>
-            <img src="../Results/Pictures/SUS.jpg" id="fig-sus" width="100%">
+            <img src="./images/SUS.jpg" id="fig-sus" width="100%">
             Figure 6: Box plot representing the results of the SUS questionnaire for the two shapes. A higher value indicates a higher usability.
             <br/>
             <br/>
