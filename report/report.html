@@ -38,7 +38,7 @@
         <p>By: Alessio Masi & Jonathan Breitenthaler</p>
         <h2>Introduction</h2>
         <p>
-            In environments such as CAD, the object to be designed has to be rotated extensively during the creative process, which can be tedious with a standard input device such as a computer mouse. To address this problem, various approaches have been taken such as computer mouses specifically designed for CAD projects or touch displays. A solution we were especially interested in was a separate tangible user interface to be used to rotate the object in design. Technology for this kind of interface already exists and studies have proven it to be eligible (see section <a href="#rel_work">Related Work</a>), however we noticed that the shape of the TUI was never questioned. In the papers described in the Related Work section we saw different shapes used for this purpose, which led us to our goal to find the most suiting shape for a tangible user interface used to rotate 3D objects. 
+            In environments such as CAD, the object to be designed has to be rotated extensively during the creative process, which can be tedious with a standard input device like a computer mouse. To address this problem, various approaches have been taken such as computer mouses specifically designed for CAD projects or touch displays. A solution we were especially interested in was a separate tangible user interface to be used to rotate the object in design. Technology for this kind of interface already exists and studies have proven it to be eligible (see section <a href="#rel_work">Related Work</a>), however we noticed that the shape of the TUI was never questioned. In the papers described in the Related Work section we saw different shapes used for this purpose, which led us to our goal to find the most suiting shape for a tangible user interface used to rotate 3D objects. 
             This optimal shape should be operable one-handed as to limit fatigue and increase efficiency while using the interface alongside a keyboard and mouse. The constraints for this shape therefore are:
              <ul>
                 <li>Comfortable fit for one hand</li>
@@ -70,9 +70,9 @@
             Image 1: The three chosen shapes in order of appearance: Cube, Sphere, Cuboctahedron 
             <br/><br/>
             Before diving into the user study, we decided to do a preliminary study in order to eliminate one of the three shapes beforehand. The preliminary study was done on 4 participants and the task was to try to mimic the rotation of an object displayed on the screen by a video of approximately 30 seconds,
-            without having any visual feedback. To evaluate the three shapes at this stage we based our decision solely on the feedback provided by the participants. After performing the same task with all 
+            without having any visual feedback on whether they rotated the object correctly. To evaluate the three shapes at this stage we based our decision solely on the feedback provided by the participants. After performing the same task with all 
             three shapes we asked them to give a personal classification of the three shapes from best to worst.  <br>
-            After completing this part we designed the final experiment. Firstly we ask the participant to perform a mental rotation test, in order to understand if the results we get from the docking task show a correlation with the ability of a person to identify the same object in different orientations. It has to be noted that this test was performed without time constraints. After performing this test the participants were faced with a challenge in which they had to perform a docking task with both of the two shapes left. This task consists in moving an object from a starting position to a target position, where the starting and target position only differ in their respective rotation. In our case the rotating and target object are the same: a block that we designed to be distinguishable in all rotations. The participants have to move the object from the starting position to the target position by rotating the TUI in their hand. They are required to perform the task with both of the shapes while the order in which the two shapes are given to the participants is alternated (to address possible learning transferred between the two shapes). 
+            After completing this part we designed the final experiment. Firstly we ask the participant to perform a mental rotation test [7] , in order to understand if the results we get from the docking task show a correlation with the ability of a person to identify the same object in different orientations. It has to be noted that this test was performed without time constraints. After performing this test the participants were faced with a challenge in which they had to perform a docking task with both of the two shapes left. This task consists in moving an object from a starting position to a target position, where the starting and target position only differ in their respective rotation. In our case the rotating and target object are the same: a block that we designed to be distinguishable in all rotations. The participants have to move the object from the starting position to the target position by rotating the TUI in their hand. They are required to perform the task with both of the shapes while the order in which the two shapes are given to the participants is alternated (to address possible learning transferred between the two shapes). 
             In order to help us understand which one is the best shape according to the hypothesis we made, we measured the time needed to complete the task, the number of errors and the distance between the position reached
             and the correct one, concerning the quantitative data. To calculate the rotational distance between two quaternions the following formula was used:
             <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -95,9 +95,9 @@
             split in two groups of 6 people, one group performed the taskset with the sphere first (Group 2) and the other group with the cuboctahedron first (Group 1). 
         </p>
         <h3 id="impl">Implementation</h3>
-        <p>In this section we are going to briefly present the implementation of what we have done to perform the experiment. <br>
+        <p>In this section we are going to briefly present the implementation of the prototype we used to perform the experiment. <br>
             The first thing we did was to build the models to be used in the preliminary study. We had to build the three shapes and we decided to laser cut both the cuboctahedron and the cube while for the sphere
-            we used a tennis ball. Regarding the dimension we chose to take the volume of the tennisball at 149 cm<sup>3</sup> as a reference. We then designed the other two shapes to have apprroximately the same volume accordingly.
+            we used a tennis ball. Regarding the dimension we chose to take the volume of the tennisball at 149 cm<sup>3</sup> as a reference. We then designed the other two shapes to have approximately the same volume accordingly.
             At this stage we did not have the need to equip the objects with sensors considering the preliminary study was based only on a replication of movements.<br>
             After completing the preliminary study we needed to integrate sensors to detect the rotation in the two winner shapes. We used an IMU, the Grove - 6-Axis Accelerometer&Gyroscope(BMI088), which is a 6 DOF
             sensor combining both the measurements of the accelerometer and the gyroscope to detect the rotation of the object with higher precision. The sensor was then connected to an Arduino XIAO ESP32C3, which was powered by a 
@@ -207,9 +207,9 @@ Table 3: Correlation table between the mental rotation test and the average comp
             mild correlation between the variables.
             <br/>
             <p>The first thing to do when performing a correlation score is to be sure that it makes sense to compute such a value in the specific use case. We think it was sensful because we wanted to see if there was a relation between the performance in the mental rotation test the task. What we can derive from these correlations is that a bad score on the mental rotation test is very likely to lead to a high completion time for the rotation tasks with the TUI. Looking at Table 2 we see that for
-                Group 1 there is a very high correlation between the two variables. This group had bad scores on the mental rotation test throughout. However the other group with mixed scores on the mental rotation test, does not show this high correlation.This might be due the fact that the shape is uncommon and is not easy for the participants to easily understand the rotation they are performing with this shape, even if they show good capabilities in understanding rotations.             </p>
+                Group 1 there is a very high correlation between the two variables. This group had bad scores on the mental rotation test throughout. However the other group with mixed scores on the mental rotation test, does not show this high correlation.This might be due to the fact that the shape is uncommon and is not easy for the participants to easily understand the rotation they are performing with this shape, even if they show good capabilities in understanding rotations.             </p>
             <br>
-            After analyzing the this correlation we will now focus on understanding if there is any form of learning during the training phase. To understand this we will focus on <a href="#fig-training-cubo">Picture 1</a>, which represents the two curves for the two shapes divided per group.
+            After analyzing this correlation we will now focus on understanding if there is any form of learning during the training phase. To understand this we will focus on <a href="#fig-training-cubo">Picture 1</a>, which represents the two curves for the two shapes divided per group.
             <br/>
             <br/>
             <img src="./images/training_improvement_cubo.png" id="fig-training-cubo" width="49%">
@@ -218,13 +218,13 @@ Table 3: Correlation table between the mental rotation test and the average comp
             <p> Observing the graphs we can see that the performance of the two shapes after 2/3 tasks is equivalent, meaning that the training necessary to obtain a good level of performance is reached very soon, and after that point
                 we observe that the results are task-related and no more dependent on the amount of training that one got on a specific shape.
             </p>
-            After evaluating the data we collected during the training phase, we can finally move on to the test phase. We will firstly put our attention on understanding the distribution of the data in general and the general results we got, concluding the considerations on the test phase with an analysis taskwise rather than participant-wise. 
+            After evaluating the data we collected during the training phase, we move on to the test phase. We will firstly put our attention on understanding the distribution of the data in general and conclude the considerations on the test phase with an analysis taskwise rather than participant-wise. 
             In <a href="#fig-box-plot">Figure 2</a>, we can see the box plot of the overall data, both for the completion time and the accuracy.<br><br/>
             <img src="./images/box_precision.png" id="fig-box-plot" width="49%">
             <img src="./images/box_completion_time.png" id="fig-box-plot" width="49%"> 
             Figure 2: Images reporting the box plots for the two shapes for the two metrics we measured, completion time and precision.
             <p>If we look at the box plot for the precision data, what we can derive is that the two shapes are almost equivalent. If we look not only at the lower value reached but also at the distribution of the values (more details on the 
-                variance in the <a href="#fig-std">Fig 3</a>), they fall into each other meaning we cannot derive any conclusion from this graph apart from the fact that they can be considered comparable.<br>
+                variance in the <a href="#fig-std">Figure 3</a>), they fall into each other meaning we cannot derive any conclusion from this graph apart from the fact that they can be considered comparable.<br>
                 If we now look at the graph depicting the completion time on the left, we can see almost the same result as discussed before with the exception that here the difference is even more reduced with respect to the previous case.
             </p>
             After plotting these graphs we wanted to investigate the results even further and so we decided to plot the graph below which represents the mean over the standard deviation to gather more insight on the spread of the data.
@@ -238,7 +238,7 @@ Table 3: Correlation table between the mental rotation test and the average comp
             </p> 
             After plotting the graphs divided per participant and not being able to find anything that could help on solve the research question that started this experiment, we decided to expand on insights 
             considering an taskwise analysis.
-            Doing an taskwise analysis we wanted to understand whether there are tasks in the taskset that are distinguishable in terms of completion time and precision with respect to the two shapes.
+            Doing a taskwise analysis we wanted to understand whether there are tasks in the taskset that are distinguishable in terms of completion time and precision with respect to the two shapes.
             <br/>
             <br/>
             <img src="./images/completion_time_per_task.png" id="fig-time-task" width="100%">
@@ -346,6 +346,7 @@ Table 3: Correlation table between the mental rotation test and the average comp
                 <li>Ferscha, Alois, et al. "Physical shortcuts for media remote controls." 2nd International Conference on INtelligent TEchnologies for interactive enterTAINment. 2010.</li>
                 <li>Hart, Sandra G., and Lowell E. Staveland. "Development of NASA-TLX (Task Load Index): Results of empirical and theoretical research." Advances in psychology. Vol. 52. North-Holland, 1988. 139-183.</li>
                 <li>Brook, John. "SUS: a" quick and dirty" usability scale." Usability evaluation in industry (1996).</li>
+                <li>Vandenberg, Steven G., and Allan R. Kuse. "Mental rotations, a group test of three-dimensional spatial visualization." Perceptual and motor skills 47.2 (1978): 599-604.</li>
             </ol>
         </p>
         <h2>Appendix</h2>
